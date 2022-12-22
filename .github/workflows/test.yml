@@ -1,0 +1,32 @@
+name: Release Plugin
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-plugin:
+    name: Publish plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # - name: list
+      #   run: |
+      #     sudo apt-get update && sudo apt-get -y install tree
+      #     tree -aI .git
+      #   shell: bash
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: "adopt"
+          java-version: 17
+
+      # # - name: Gradle wrapper validation
+      # #   uses: gradle/wrapper-validation-action@v1
+
+      # - name: Setup Gradle
+      #   uses: karn/gradle-github-publish@v6
+
+      - name: ./gradlew publishPlugins
+        uses: ./.github/actions/gradle-github-publish
