@@ -25,8 +25,8 @@ jobs:
       # # - name: Gradle wrapper validation
       # #   uses: gradle/wrapper-validation-action@v1
 
-      # - name: Setup Gradle
-      #   uses: karn/gradle-github-publish@v6
+      - name: Setup Gradle
+        uses: karn/gradle-github-publish@v1
 
-      - name: ./gradlew publishPlugins
-        uses: ./.github/actions/gradle-github-publish
+      # - name: ./gradlew publishPlugins
+      #   uses: ./.github/actions/gradle-github-publish

@@ -130,21 +130,11 @@ runs:
         sudo apt-get update && sudo apt-get install tree
         tree ${{ inputs.publishing-directory }}
       shell: bash
-    - name: Create release branch if it does not exist
-      # TODO(karn): Check if the artifact branch is the default branch
-      run: |
-        git add ${{ inputs.publishing-directory }}
-        git stash
-        (git fetch origin ${{ inputs.publishing-artifact-branch }} && git checkout ${{ inputs.publishing-artifact-branch }} && git pull) || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -r --cached .)
-        git stash pop
-        tree ${{ inputs.publishing-directory }}
-      shell: bash
     - name: Commit
       # TODO(karn): Check if the artifact branch is the default branch
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global push.autoSetupRemote true
         git add ${{ inputs.publishing-directory }}
         git commit -m "Create release ${{ inputs.publishing-artifact-version }}"
         git push
