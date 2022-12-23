@@ -24,6 +24,7 @@ inputs:
     default: ""
   publishing-artifact-version:
     required: true
+    default: "3.12.0-local"
 runs:
   using: "composite"
   steps:
@@ -31,7 +32,6 @@ runs:
       id: initialize-publish-script
       run: |
         cat <<EOF > ./publish.gradle.kts
-        println("running script")
         logger.quiet("Running publish.gradle.kts to create publishing configuration")
 
         /**
@@ -115,7 +115,7 @@ runs:
       id: publish
       run: |
         ls -al
-        ./gradlew -i --init-script publish.gradle.kts :publishLocalPublicationToLocalRepository \
+        ./gradlew -q --init-script publish.gradle.kts :publishLocalPublicationToLocalRepository \
           -Ppublishing.dir="${{ inputs.publishing-directory }}" \
           -Ppublishing.project.name="${{ inputs.publishing-project-name }}" \
           -Ppublishing.project.description="${{ inputs.publishing-project-description }}" \
@@ -133,12 +133,19 @@ runs:
     - name: Create release branch if it does not exist
       # TODO(karn): Check if the artifact branch is the default branch
       run: |
-        git checkout ${{ inputs.publishing-artifact-branch }} || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -rf .)
+        git add ${{ inputs.publishing-directory }}
+        git stash
+        (git fetch origin ${{ inputs.publishing-artifact-branch }} && git checkout ${{ inputs.publishing-artifact-branch }} && git pull) || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -r --cached .)
+        git stash pop
         tree ${{ inputs.publishing-directory }}
       shell: bash
-    # - name: Commit
-    #   # TODO(karn): Check if the artifact branch is the default branch
-    #   run: |
-    #     git checkout ${{ inputs.publishing-artifact-branch }} || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -rf .)
-    #     tree ${{ inputs.publishing-directory }}
-    #   shell: bash
+    - name: Commit
+      # TODO(karn): Check if the artifact branch is the default branch
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global push.autoSetupRemote true
+        git add ${{ inputs.publishing-directory }}
+        git commit -m "Create release ${{ inputs.publishing-artifact-version }}"
+        git push
+      shell: bash
