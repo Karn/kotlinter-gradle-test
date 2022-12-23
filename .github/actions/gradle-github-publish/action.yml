@@ -13,6 +13,9 @@ inputs:
   publishing-project-url:
     required: false
     default: ""
+  publishing-artifact-branch:
+    required: false
+    default: "artifacts"
   publishing-artifact-group:
     required: false
     default: ""
@@ -125,5 +128,17 @@ runs:
       id: list
       run: |
         sudo apt-get update && sudo apt-get install tree
-        tree -aI .git
+        tree ${{ inputs.publishing-directory }}
       shell: bash
+    - name: Create release branch if it does not exist
+      # TODO(karn): Check if the artifact branch is the default branch
+      run: |
+        git checkout ${{ inputs.publishing-artifact-branch }} || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -rf .)
+        tree ${{ inputs.publishing-directory }}
+      shell: bash
+    # - name: Commit
+    #   # TODO(karn): Check if the artifact branch is the default branch
+    #   run: |
+    #     git checkout ${{ inputs.publishing-artifact-branch }} || (git checkout --orphan ${{ inputs.publishing-artifact-branch }} && git rm -rf .)
+    #     tree ${{ inputs.publishing-directory }}
+    #   shell: bash
