@@ -13,9 +13,6 @@ inputs:
   publishing-project-url:
     required: false
     default: ""
-  publishing-artifact-branch:
-    required: false
-    default: "artifacts"
   publishing-artifact-group:
     required: false
     default: ""
@@ -24,7 +21,7 @@ inputs:
     default: ""
   publishing-artifact-version:
     required: true
-    default: "3.12.0-local"
+
 runs:
   using: "composite"
   steps:
@@ -81,7 +78,13 @@ runs:
                   artifactId = targetArtifactId
                   version = targetVersion
 
-                  from(project.components["java"])
+                  if (project.pluginManager.hasPlugin("com.android.library")) {
+                    // Handle Android Library
+                    from(components["release"])
+                  } else {
+                    // Default to the standard project
+                    from(project.components["java"])
+                  }
                 }
               }
               repositories {
@@ -133,7 +136,7 @@ runs:
     - name: Commit
       # TODO(karn): Check if the artifact branch is the default branch
       run: |
-        git config --global user.name "github-actions[bot]"
+        git config --global user.name "github-actions"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add ${{ inputs.publishing-directory }}
         git commit -m "Create release ${{ inputs.publishing-artifact-version }}"
